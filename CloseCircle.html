@@ -4,30 +4,61 @@
 </head>
 
 <body>
-<div class="container">
-    <header>
-        <h1>Topic List</h1>
-
-        {{> loginButtons}}
-        <!-- add a form below the h1 -->
-        <form class="new-topic">
-            <input type="text" name="title" placeholder="Type to add new topics" />
-        </form>
-    </header>
-    <ul>
-      {{#each topics}}
-        {{> topic}}
-      {{/each}}
-    </ul>
-</div>
 </body>
 
+<template name="Home">
+        <div class="container">
+            <header>
+                <h1>CloseCircle</h1>
+
+                {{> loginButtons}}
+                <!-- add a form below the h1 -->
+                <form class="form-inline" id="searchform">
+                    <input type="text" name="title" id="title" class="form-control" placeholder="Click to Find a Topic" />
+                    <button type="submit" class="btn btn-primary" id="add">Add Topic</button>
+                </form>
+            </header>
+            <div class="col-sm-12">
+                <div class="list-group">
+                    {{#each getTopics}}
+                        {{> topic}}
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+</template>
+
+<template name="TopicDiscussion">
+    <div class="container">
+        <header>
+            <h1>CloseCircle</h1>
+            {{#with getTopic id}}
+                <h2>{{title}}</h2>
+                <h3>{{description}}</h3>
+            {{/with}}
+        </header>
+
+        <div class="col-sm-12" id="messages">
+            <!-- <div class="list-group"> -->
+                {{#each getMessages}}
+                    {{> message}}
+                {{/each}}
+            <!-- </div> -->
+        </div>
+    </div>
+</template>
+
 <template name="topic">
-    <li class="{{#if checked}}checked{{/if}}">
-        <button class="delete">&times;</button>
+    <a class="list-group-item" href="/topic/{{_id}}">
+        <h4 class="list-group-item-heading">{{{title}}}</h4>
+        <p class="list-group-item-text">{{{description}}}</p>
+    </a>
+</template>
 
-        <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
 
-        <span class="text">{{title}}</span>
-    </li>
+<template name="message">
+    <div class="panel panel-default">
+        <div class="panel-heading">{{createdAt}} {{useralias}}</div>
+        <div class="panel-body">{{text}}</div>
+    </div>
 </template>
