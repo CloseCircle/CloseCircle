@@ -38,12 +38,17 @@
             {{/with}}
         </header>
 
+
         <div class="col-sm-12" id="messages">
             <!-- <div class="list-group"> -->
                 {{#each getMessages}}
                     {{> message}}
                 {{/each}}
             <!-- </div> -->
+        </div>
+
+        <div class="message-form">
+            <input type="text" name="text" id="text" class="message-input" placeholder="Type message here"/>
         </div>
     </div>
 </template>
@@ -57,8 +62,8 @@
 
 
 <template name="message">
-    <div class="panel panel-default">
-        <div class="panel-heading">{{createdAt}} {{useralias}}</div>
-        <div class="panel-body">{{text}}</div>
+    <div class="message-container">
+        <div class="message-heading">{{useralias}} <span class="message-subheading">{{createdAt}}</span></div>
+        <div class="message-body">{{text}}</div>
     </div>
 </template>

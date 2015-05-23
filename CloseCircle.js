@@ -60,34 +60,21 @@ if(Meteor.isClient) {
       console.log('Setting topic for', this.data.id, 'to', ret);
       Session.set('topic', ret);
     }.bind(this))
+    Meteor.subscribe('messages', this.data.id);
   };
+  Template.TopicDiscussion.events({
+    'submit .message-form': function(event) {
+      Meteor.call('addMessage', {text: event.target.text.value, circleId: this.data.id});
+      event.target.text.value = '';
+    }
+  });
   Template.TopicDiscussion.helpers({
     getTopic: function() {
       return Session.get('topic');
     },
     getMessages: function() {
-      return [
-        { text: "that wont go away", useralias: 'fred', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-        { text: " by the light of the ole blu ", useralias: 'george', createdAt: new Date()},
-      ]
+      var topic = Session.get('topic');
+      return Meteor.call('getMessages', topic && topic._id);
     }
   });
 }
@@ -124,7 +111,11 @@ if (Meteor.isServer) {
   });
   Meteor.publish('usertopics', function() {
     return Circles.find({archived: {$ne: true}}, {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']]});
-  })
+  });
+  Meteor.publish('messages', function(circleId) {
+    // Todo: this needs security.
+    return Messages.find({circle: new MongoId(circleId)}, {sort: [['createdAt', 'desc']]});
+  });
 //  Meteor.publish("messages", function(topicId) {
 //    return Messages.find({$and: []})
 //  });
@@ -218,11 +209,24 @@ Meteor.methods({
     Messages.insert({
       text: options.text,
       createdAt: new Date(),
-      creator: userId,
-      creatorUsername: Meteor.user().username,
-      creatorAlias: Meteor.user().username, // TODO: implement actual anon/alias functionality
+      user: userId,
+      username: Meteor.user().username,
+      useralias: Meteor.user().username, // TODO: implement actual anon/alias functionality
       circle: new MongoId(options.circleId)
     });
   },
+
+  getMessages: function(circleId) {
+    userMustBeLoggedIn();
+    var circle = Circles.findOne(circleId);
+    if(!circle) {
+      throw new Meteor.Error('Circle id does not exist.');
+    }
+    if(circle.closed) {
+      userMustBeMemberOfCircle(circle);
+    }
+
+    return Messages.find({circle: new MongoId(circleId)}, {sort: [['createdAt', 'desc']]});
+  }
 
 });

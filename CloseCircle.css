@@ -1,7 +1,40 @@
 /* CSS declarations go here */
+html, body {
+    height:100%;
+    margin:0;
 
-.center-block {float: none !important}
+}
 #messages {
-    max-height: 60%;
-    overflow-Y: scroll;
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+.message-container {
+    margin: 16px 0;
+    flex: 0 1 30px;
+}
+
+.message-body {
+    font-size: 16px;
+    flex: 1 1 auto;
+}
+
+.message-heading {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.message-subheading {
+    font-size: 14px;
+    font-weight: 300;
+    color: rgb(180,180,180);
+}
+
+.message-input {
+    flex: 0 1 40px;
+}
+
+header {
+    flex: 0 1 auto;
 }
