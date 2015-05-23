@@ -1,0 +1,22 @@
+<!-- simple-todos.html -->
+<head>
+    <title>CloseCircle</title>
+</head>
+
+<body>
+<div class="container">
+    <header>
+        <h1>CloseCircle</h1>
+    </header>
+
+    <ul>
+      {{#each topics}}
+        {{> topic}}
+      {{/each}}
+    </ul>
+</div>
+</body>
+
+<template name="topic">
+    <li>{{title}}</li>
+</template>
