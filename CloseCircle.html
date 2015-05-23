@@ -6,9 +6,14 @@
 <body>
 <div class="container">
     <header>
-        <h1>CloseCircle</h1>
-    </header>
+        <h1>Topic List</h1>
 
+        {{> loginButtons}}
+        <!-- add a form below the h1 -->
+        <form class="new-topic">
+            <input type="text" name="title" placeholder="Type to add new topics" />
+        </form>
+    </header>
     <ul>
       {{#each topics}}
         {{> topic}}
@@ -18,5 +23,11 @@
 </body>
 
 <template name="topic">
-    <li>{{title}}</li>
+    <li class="{{#if checked}}checked{{/if}}">
+        <button class="delete">&times;</button>
+
+        <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
+
+        <span class="text">{{title}}</span>
+    </li>
 </template>
