@@ -94,10 +94,12 @@
 </template>
 
 <template name="topic">
-    <a class="list-group-item" href="/topic/{{_id}}">
+    <div id="topic">
+    <a class="list-group-item-local" href="/topic/{{_id}}">
         <h4 class="list-group-item-heading">{{{title}}}</h4>
         <p class="list-group-item-text">{{{description}}}</p>
     </a>
+</div>
 </template>
 
 
