@@ -49,13 +49,15 @@ html, body {
 
 #home {
     /*flex: 0 1 auto;*/
-    width:90%;
+    width:95%;
     margin:auto;
     text-align: center;
-    position: fixed;
+    margin-top: 100px;
+    margin-bottom: 50px;
+    /*position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);*/
     max-width: 500px;
     border: 3px solid #DCDCDD;
     border-radius: 50%;
