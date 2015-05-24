@@ -80,13 +80,14 @@ html, body {
 }
 
 #discussion img {
-    width: 200px;
+    width: 150px;
 }
 
 .discuss {
     background-color: #fff;
     margin: 20px !important;
-    padding: 10px !important;
+    padding: 20px !important;
+    margin-bottom: 70px !important;
 }
 
 #discussion h2 {
@@ -175,11 +176,6 @@ a.list-group-item-local {
 
 @media (min-width: 400px) {
 
-    .container {
-        width: 95%;
-        margin: auto;
-    }
-
     #home {
         width: 350px;
         height: 350px;
@@ -209,6 +205,13 @@ a.list-group-item-local {
         padding: 3% 8%;
         padding-top: 100px;
         margin-bottom: 50px;
+    }
+
+    .discuss {
+        margin: auto !important;
+        margin-top: 20px !important;
+        width: 750px;
+        margin-bottom: 70px !important;
     }
 
     .list-group-item-local {
