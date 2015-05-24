@@ -14,7 +14,6 @@ Router.route('topic/:topicId', function() {
     Session.set('topic', ret);
     this.render('TopicDiscussion', {data: {id: this.params.topicId}});
   }.bind(this))
-//    Meteor.subscribe('topics');
   Meteor.subscribe('topicmessages', this.params.topicId);
 })
 
@@ -46,6 +45,8 @@ if (!Array.prototype.find) {
 
 
 if(Meteor.isClient) {
+  Meteor.subscribe('topics');
+
   var options = {
     keepHistory: 1000,
     localSearch: true
@@ -73,11 +74,12 @@ if(Meteor.isClient) {
         TopicSearch.search(text);
       }, 100),
     'submit #searchform': function(event) {
-      Meteor.call('addCircle', {title: event.target.title.value, closed: false}, function(err, ret) {
-        if(err) console.error('Error in addCircle', err, err.stack);
+      Meteor.call('addCircle', {title: event.target.title.value, closed: false}, function (err, ret) {
+        if (err) console.error('Error in addCircle', err, err.stack);
         TopicSearch.search('');
       });
       event.target.title.value = '';
+      return false;
     }
 /*    'click #add': function(event) {
 
@@ -110,14 +112,16 @@ if(Meteor.isClient) {
     },
     'click #closecircle': function(event) {
       var topic = Session.get('topic');
+      console.log('In closecircle:', topic);
       if(!topic) return;
-      var existing = Circles.findOne({$and: [
+      var existing = Circles.find({$and: [
         {parentCircleId: topic._id},
         {closed: true},
         {members: {$elemMatch: {userId: Meteor.userId()}}},
-      ]});
-      if(existing) {
-        Router.go('/topic/' + existing._id);
+      ]}).fetch();
+      console.log('existing:', existing);
+      if(existing && existing[0]) {
+        Router.go('/topic/' + existing[0]._id);
         return false;
       }
       $('select').select2();
@@ -242,11 +246,14 @@ if (Meteor.isServer) {
     return new RegExp("(" + parts.join('|') + ")", "ig");
   }
 
-//  Meteor.publish("topics", function() {
-//    return Circles.find({$and: [{closed: {$ne: true}}, {archived: {$ne: true}}]}, {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']]});
-//  });
-  Meteor.publish('usertopics', function() {
-    return Circles.find({archived: {$ne: true}}, {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']]});
+  Meteor.publish("topics", function() {
+    var selector = {$and: [{archived: {$ne: true}},
+      {$or: [
+        {closed: {$ne: true}},
+        {$and: [{closed: true}, {members: {$elemMatch: {userId: this.userId}}}]}
+      ]}]}
+    var ret = Circles.find(selector, options).fetch();
+    return Circles.find(selector, {sort: [['closed', 'desc'], ['latestPostAt', 'desc'], ['createdAt', 'desc']], limit: 20});
   });
   Meteor.publish('topicmessages', function(circleId) {
     // Todo: this needs security.
@@ -309,13 +316,14 @@ Meteor.methods({
       owner: Meteor.userId(),
       ownerUsername: Meteor.user().username,
       parentCircleId: options.parentCircleId,
-      members: [{
+/*      members: [{
         userId: Meteor.userId(),
         username: Meteor.user().username,
         alias: Meteor.user().username,
         addedAt: new Date()
-      }]
+      }] */
     });
+    Meteor.call('addMemberToCircle', {circleId: circleId, userId: Meteor.userId(), username: Meteor.user().username, alias: Meteor.user().alias});
 
     if(options.members && options.members.length) {
       for(var i = 0;i < options.members.length;++i) {
