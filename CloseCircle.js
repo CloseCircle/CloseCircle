@@ -36,6 +36,7 @@ if (!Array.prototype.find) {
 }
 
 
+
 if(Meteor.isClient) {
   var options = {
     keepHistory: 1000 * 60 * 5,
@@ -89,7 +90,7 @@ if(Meteor.isClient) {
       console.log('Setting topic for', this.data.id, 'to', ret);
       Session.set('topic', ret);
     }.bind(this))
-    Meteor.subscribe('topics');
+//    Meteor.subscribe('topics');
     Meteor.subscribe('topicmessages', this.data.id);
   };
   Template.TopicDiscussion.events({
@@ -252,7 +253,8 @@ function userMustBeLoggedIn()
 function userMustBeMemberOfCircle(circle)
 {
   var userId = Meteor.userId();
-  if(circle.closed && (!circle.members || !circle.members.find(function(e) {e.userId == userId}))) {
+  if(circle.closed && (!circle.members || !circle.members.find(function(e) {return e.userId == userId}))) {
+    console.log('circle:', circle, '- userId:', userId);
     throw new Meteor.Error('You are not a member of this closed circle. not-authorized.');
   }
 }
