@@ -136,6 +136,22 @@ if(Meteor.isClient) {
       console.log('In getMessages');
       return CircleMessages.find({circle: topic && topic._id}, {sort: [['createdAt', 'asc']]});
 //      return Meteor.call('getCircleMessages', topic && topic._id);
+    },
+    dynamicButtonName: function() {
+      var topic = Session.get('topic');
+
+      if (topic.closed) {
+        return 'Invite Others';
+      } else if (Meteor.user() && Circles.findOne({$and: [
+                                          {closed: true}, 
+                                          {members: {$elemMatch: {userId: Meteor.userId()}}},
+                                          {parentCircleId: topic._id}
+                                        ]})
+                                      ) {
+        return 'Goto CloseCircle';
+      } else {
+        return 'Close Circle';
+      }
     }
   });
 
@@ -147,7 +163,6 @@ if(Meteor.isClient) {
   Template.groupSelect.events({
     'click #inviteBtn': function(event) {
       try {
-        console.log('mtk2 /-/ made it!');
         var selectedChoices = $("#groupMembers").val();
         if(!selectedChoices || !selectedChoices.length) {
            return false;
