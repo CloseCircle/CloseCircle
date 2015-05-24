@@ -37,7 +37,7 @@ html, body {
 
 header {
     /*flex: 0 1 auto;*/
-    width:70%;
+    width:80%;
     margin:auto;
     text-align: center;
     position: fixed;
@@ -45,6 +45,8 @@ header {
     left: 50%;
     transform: translate(-50%, -50%);
     max-width: 500px;
+    border: 1px solid #dfdfdf;
+    padding: 10px;
 }
 
 header h1 {
