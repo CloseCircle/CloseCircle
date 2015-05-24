@@ -116,6 +116,7 @@ if(Meteor.isClient) {
       console.log('In closecircle:', topic);
       if(!topic) return;
       var existing = Circles.find({$and: [
+        {archived: {$ne: true}},
         {parentCircleId: topic._id},
         {closed: true},
         {members: {$elemMatch: {userId: Meteor.userId()}}},
@@ -156,6 +157,7 @@ if(Meteor.isClient) {
       if (topic.closed) {
         return 'Invite Others';
       } else if (Meteor.user() && Circles.findOne({$and: [
+                                          {archived: {$ne: true}},
                                           {closed: true}, 
                                           {members: {$elemMatch: {userId: Meteor.userId()}}},
                                           {parentCircleId: topic._id}
