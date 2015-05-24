@@ -18,6 +18,7 @@ html, body {
 
 .container {
     padding: 0 !important;
+    margin-bottom: 70px !important;
 }
 
 #messages {
@@ -138,7 +139,6 @@ button {
 .list-group-item-local {
   width: 100%;
   display: block;
-  /*float: left;*/
   padding: 10px 15px;
   margin-bottom: 1px;
   background-color: #fff;
@@ -148,7 +148,59 @@ a.list-group-item-local {
     color: #1985A1;
 }
 
-#topic:last-child {
-    content: '';
-    margin-bottom: 70px;
+
+@media (min-width: 400px) {
+
+    .container {
+        width: 95%;
+        margin: auto;
+    }
+
+    #home {
+        width: 350px;
+        height: 350px;
+        padding: 8% 12%;
+        padding-top: 55px;
+    }
+
+   .list-group-item-local {
+    width: 49.5%;
+    float: left;
+    margin-right: 1px;
+   } 
+
+}
+
+@media (min-width: 600px) {
+    #home {
+        width: 500px;
+        height: 500px;
+        padding: 5% 10%;
+        padding-top: 100px;
+    }
+}
+
+@media (min-width: 800px) {
+    #home {
+        padding: 3% 8%;
+        padding-top: 100px;
+        margin-bottom: 50px;
+    }
+
+    .list-group-item-local {
+        width: 33%;
+    }
+}
+
+@media (min-width: 1200px) {
+    #home {
+        padding: 2% 7%;
+        padding-top: 95px;
+    }
+
+    .list-group-item-local {
+        width: 24.75%;
+    }
+}
+
 }
