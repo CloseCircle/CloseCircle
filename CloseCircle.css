@@ -157,7 +157,7 @@ button {
     border-radius: 5px;
     transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
     padding: 5px;
-    display: block;
+    display: inline;
     width: 100%;
 }
 
