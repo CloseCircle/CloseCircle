@@ -111,7 +111,7 @@
 
 <template name="message">
     <div class="message-container">
-        <div class="message-heading">{{useralias}} <span class="message-subheading">{{createdAt}}</span></div>
+        <div class="message-heading">{{useralias}} <span class="message-subheading">{{formatDate createdAt}}</span></div>
         <div class="message-body">{{text}}</div>
     </div>
 </template>

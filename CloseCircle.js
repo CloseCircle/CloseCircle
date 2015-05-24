@@ -175,6 +175,10 @@ if(Meteor.isClient) {
 //      return Meteor.call('getRecentUsersForCircle', thisCircle._id);
     }
   });
+  
+  Template.registerHelper('formatDate', function(date) {
+    return moment(date).format('MM/DD HH:mm A');
+  });
 }
 
 
