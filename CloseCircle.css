@@ -22,9 +22,9 @@ html, body {
 }
 
 #messages {
-    display: flex;
-    flex-flow: column;
-    height: 100%;
+    overflow:auto;
+    position: relative;
+    max-height: 250px;
 }
 
 .message-container {
@@ -198,6 +198,10 @@ a.list-group-item-local {
         padding: 5% 10%;
         padding-top: 100px;
     }
+
+    #messages {
+        max-height: 350px;
+    }
 }
 
 @media (min-width: 800px) {
@@ -216,6 +220,10 @@ a.list-group-item-local {
 
     .list-group-item-local {
         width: 33%;
+    }
+
+    #messages {
+        max-height: 450px;
     }
 }
 
