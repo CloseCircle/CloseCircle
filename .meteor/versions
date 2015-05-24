@@ -45,6 +45,7 @@ minimongo@1.0.8
 mizzao:bootstrap-3@3.3.1_1
 mobile-status-bar@1.0.3
 mongo@1.1.0
+natestrauser:select2@3.5.1
 npm-bcrypt@0.7.8_2
 observe-sequence@1.0.6
 ordered-dict@1.0.3
@@ -67,3 +68,4 @@ underscore@1.0.3
 url@1.0.4
 webapp@1.2.0
 webapp-hashing@1.0.3
+zimme:select2-bootstrap3-css@1.4.6

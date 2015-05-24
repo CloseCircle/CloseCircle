@@ -1,6 +1,7 @@
 // simple-todos.js
 Circles = new Mongo.Collection("circles");
 CircleMessages = new Mongo.Collection("circlemessages");
+Users = new Mongo.Collection('users');
 
 Router.route('/', function() {
   this.render('Home');
@@ -230,6 +231,10 @@ Meteor.methods({
       useralias: Meteor.user().username, // TODO: implement actual anon/alias functionality
       circle: options.circleId
     });
+  },
+
+  getRecentUsersForCircle: function(circleId) {
+    return Users.find({_id: {$in: CircleMessages.distinct('user', {circle: circleId})}});
   },
 
   getCircleMessages: function(circleId) {
