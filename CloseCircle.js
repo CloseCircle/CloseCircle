@@ -1,6 +1,6 @@
 // simple-todos.js
 Circles = new Mongo.Collection("circles");
-Messages = new Mongo.Collection("messages");
+CircleMessages = new Mongo.Collection("circlemessages");
 
 Router.route('/', function() {
   this.render('Home');
@@ -37,8 +37,11 @@ if(Meteor.isClient) {
         var text = $(event.target).val().trim();
         TopicSearch.search(text);
       }, 100),
-    'submit .searchform': function(event) {
-      Meteor.call('addCircle', {title: event.target.title.value, closed: false});
+    'submit #searchform': function(event) {
+      Meteor.call('addCircle', {title: event.target.title.value, closed: false}, function(err, ret) {
+        if(err) console.error('Error in addCircle', err, err.stack);
+        TopicSearch.search('');
+      });
       event.target.title.value = '';
     }
 /*    'click #add': function(event) {
@@ -60,12 +63,24 @@ if(Meteor.isClient) {
       console.log('Setting topic for', this.data.id, 'to', ret);
       Session.set('topic', ret);
     }.bind(this))
-    Meteor.subscribe('messages', this.data.id);
+    Meteor.subscribe('topics');
+    Meteor.subscribe('topicmessages', this.data.id);
   };
   Template.TopicDiscussion.events({
     'submit .message-form': function(event) {
-      Meteor.call('addMessage', {text: event.target.text.value, circleId: this.data.id});
-      event.target.text.value = '';
+      try {
+        var topic = Session.get('topic');
+        Meteor.call('addMessage', {text: event.target.text.value, circleId: topic && topic._id}, function (err, ret) {
+          if (err) console.error('Error while calling addMessage', err, err.stack);
+          else {
+            event.target.text.value = '';
+          }
+        });
+        return false;
+      } catch(err) {
+        console.error('Error while submitting message.', err, err.stack);
+        return false;
+      }
     }
   });
   Template.TopicDiscussion.helpers({
@@ -74,7 +89,8 @@ if(Meteor.isClient) {
     },
     getMessages: function() {
       var topic = Session.get('topic');
-      return Meteor.call('getMessages', topic && topic._id);
+      return CircleMessages.find({circle: topic && topic._id}, {sort: [['createdAt', 'asc']]});
+//      return Meteor.call('getCircleMessages', topic && topic._id);
     }
   });
 }
@@ -112,9 +128,9 @@ if (Meteor.isServer) {
   Meteor.publish('usertopics', function() {
     return Circles.find({archived: {$ne: true}}, {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']]});
   });
-  Meteor.publish('messages', function(circleId) {
+  Meteor.publish('topicmessages', function(circleId) {
     // Todo: this needs security.
-    return Messages.find({circle: new MongoId(circleId)}, {sort: [['createdAt', 'desc']]});
+    return CircleMessages.find({circle: circleId}, {sort: [['createdAt', 'desc']]});
   });
 //  Meteor.publish("messages", function(topicId) {
 //    return Messages.find({$and: []})
@@ -159,7 +175,7 @@ Meteor.methods({
 
     console.log("I'm in addCircle", options);
 
-    Circles.insert({
+    return Circles.insert({
       title: options.title,
       description: options.description,
       closed: options.closed,
@@ -187,7 +203,7 @@ Meteor.methods({
       throw new Meteor.Error('Only the owner can add a member to this circle. not-authorized.');
     }
 
-    Circles.update(options.circleId, {$addToSet: {
+    return Circles.update(options.circleId, {$addToSet: {
       members: {
         userId: userId,
         username: Meteor.user().username,
@@ -206,18 +222,18 @@ Meteor.methods({
       userMustBeMemberOfCircle(circle);
     }
 
-    Messages.insert({
+    return CircleMessages.insert({
       text: options.text,
       createdAt: new Date(),
-      user: userId,
+      user: Meteor.userId(),
       username: Meteor.user().username,
       useralias: Meteor.user().username, // TODO: implement actual anon/alias functionality
-      circle: new MongoId(options.circleId)
+      circle: options.circleId
     });
   },
 
-  getMessages: function(circleId) {
-    userMustBeLoggedIn();
+  getCircleMessages: function(circleId) {
+/*    userMustBeLoggedIn();
     var circle = Circles.findOne(circleId);
     if(!circle) {
       throw new Meteor.Error('Circle id does not exist.');
@@ -225,8 +241,7 @@ Meteor.methods({
     if(circle.closed) {
       userMustBeMemberOfCircle(circle);
     }
-
-    return Messages.find({circle: new MongoId(circleId)}, {sort: [['createdAt', 'desc']]});
+    console.log('About to call Messages.find with', circleId); */
+    return CircleMessages.find({circle: circleId}, {sort: [['createdAt', 'asc']]});
   }
-
 });
