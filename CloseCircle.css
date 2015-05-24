@@ -37,4 +37,20 @@ html, body {
 
 header {
     flex: 0 1 auto;
+    width:70%;
+    margin:auto;
+    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+header h1 {
+    visibility: hidden;
+    position: fixed;
+}
+
+header img {
+    width:100%;
 }
