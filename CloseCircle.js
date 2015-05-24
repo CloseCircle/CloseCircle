@@ -11,6 +11,7 @@ Router.route('topic/:topicId', function() {
   this.render('TopicDiscussion', {data: {id: this.params.topicId}});
 })
 
+
 if(Meteor.isClient) {
   var options = {
     keepHistory: 1000 * 60 * 5,
