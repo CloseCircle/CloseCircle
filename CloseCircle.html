@@ -1,6 +1,7 @@
 <!-- simple-todos.html -->
 <head>
     <title>CloseCircle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 </head>
 
 <body>
@@ -15,11 +16,15 @@
                 </div>
                 <h1>CloseCircle</h1>
 
-                {{> loginButtons}}
+                <div id="login-button-home">
+                    {{> loginButtons}}
+                </div>
+
                 <!-- add a form below the h1 -->
-                <form class="form-inline" id="searchform">
-                    <input type="text" name="title" id="title" class="form-control" placeholder="Click to Find a Topic" />
-                    <button type="submit" class="btn btn-primary" id="add">Add Topic</button>
+                <form class="" id="searchform">
+                    <input type="text" name="title" id="title" class="form-home" placeholder="Click to Find a Topic" />
+                    <button type="submit" class="btn_main" id="add">Add Topic</button>
+                
                 </form>
             </header>
             <div class="col-sm-12">
