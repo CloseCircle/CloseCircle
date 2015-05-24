@@ -253,7 +253,7 @@ if (Meteor.isServer) {
         {$and: [{closed: true}, {members: {$elemMatch: {userId: this.userId}}}]}
       ]}]}
     var ret = Circles.find(selector, options).fetch();
-    return Circles.find(selector, {sort: [['closed', 'desc'], ['latestPostAt', 'desc'], ['createdAt', 'desc']], limit: 20});
+    return Circles.find(selector, {sort: [['closed', 'desc'], ['latestPostAt', 'desc'], ['createdAt', 'desc']]});
   });
   Meteor.publish('topicmessages', function(circleId) {
     // Todo: this needs security.
