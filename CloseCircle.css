@@ -2,8 +2,20 @@
 html, body {
     height:100%;
     margin:0;
-
+    background-color: #DCDCDD;
+    box-sizing: border-box;
 }
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
 #messages {
     display: flex;
     flex-flow: column;
@@ -35,9 +47,9 @@ html, body {
     flex: 0 1 40px;
 }
 
-header {
+#home {
     /*flex: 0 1 auto;*/
-    width:80%;
+    width:90%;
     margin:auto;
     text-align: center;
     position: fixed;
@@ -45,17 +57,18 @@ header {
     left: 50%;
     transform: translate(-50%, -50%);
     max-width: 500px;
-    border: 1px solid #dfdfdf;
+    border: 3px solid #DCDCDD;
     border-radius: 50%;
-    padding: 10% 10%;
+    padding: 10% 13%;
+    background-color: #fff;
 }
 
-header h1 {
+#home h1 {
     visibility: hidden;
     position: fixed;
 }
 
-header img {
+#home img {
     width:100%;
 }
 
