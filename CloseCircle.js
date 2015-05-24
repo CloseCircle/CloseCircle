@@ -11,6 +11,30 @@ Router.route('topic/:topicId', function() {
 })
 
 
+// We love hacky places to put ployfills!
+if (!Array.prototype.find) {
+  Array.prototype.find = function(predicate) {
+    if (this == null) {
+      throw new TypeError('Array.prototype.find called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+}
+
 
 if(Meteor.isClient) {
   var options = {
@@ -24,9 +48,9 @@ if(Meteor.isClient) {
     getTopics: function() {
       return TopicSearch.getData({
         transform: function(matchText, regExp) {
-          return matchText.replace(regExp, "<b>$&</b>")
+          return matchText.replace(regExp, "<u>$&</u>")
         },
-        sort: {isoScore: -1}
+        sort: [['closed', 'desc'], ['isoScope', 'desc']]
       });
     },
 
@@ -77,8 +101,6 @@ if(Meteor.isClient) {
           if (err) console.error('Error while calling addMessage', err, err.stack);
           else {
             event.target.text.value = '';
-            var d = $("#messages").get(0);
-            d.scrollTop = d.scrollHeight;
           }
         });
         return false;
@@ -97,21 +119,30 @@ if(Meteor.isClient) {
     },
     getMessages: function() {
       var topic = Session.get('topic');
+      console.log('In getMessages');
       return CircleMessages.find({circle: topic && topic._id}, {sort: [['createdAt', 'asc']]});
 //      return Meteor.call('getCircleMessages', topic && topic._id);
     }
   });
 
+  Template.message.rendered = function() {
+    var d = $("#messages").get(0);
+    d.scrollTop = d.scrollHeight;
+  };
+
   Template.groupSelect.events({
     'click #inviteBtn': function(event) {
       try {
         console.log('mtk2 /-/ made it!');
-        var selectedChoices = $(".select2-search-choice");
-        if(!selectedChoices) {
+        var selectedChoices = $("#groupMembers").val();
+        if(!selectedChoices || !selectedChoices.length) {
            return false;
         }
+        console.log('selectedChoices:', selectedChoices);
+        selectedChoices = selectedChoices.map(function(str) {var split = str.split('|'); return {userId: split[0], username: split[1], alias: split[1]}});
+        var topic = Session.get('topic');
 
-        Meteor.call('createCloseCircle' /*?*/, {/*title: event.target.text.value, owner:  ...*/}, function (err, ret) {
+        Meteor.call('createCloseCircle' /*?*/, {title: topic.title, parentCircleId: topic._id, memberList: selectedChoices}, function (err, ret) {
           if (err) console.error('Error while calling createCloseCircle', err, err.stack);
           else {
             selectedChoices.each(function() {
@@ -135,10 +166,9 @@ if(Meteor.isClient) {
       var thisCircle = Session.get('topic');
       if(!thisCircle) return;
       var circleId = thisCircle._id;
-      var userIds = CircleMessages.find({circle: circleId}).map(function(e) {return e.user}).reduce(function(pvalue, e) {if(pvalue.indexOf(e) === -1) pvalue.push(e); return pvalue;}, []);
-      // TODO: this should return aliases...
-      console.log('getRecentUsersForCircle', circleId, ':', userIds);
-      var users = Meteor.users.find({_id: {$in: userIds}});
+      var users = CircleMessages.find({$and: [{circle: circleId}, {user: {$ne: Meteor.userId()}}]})
+          .map(function(e) {return {_id: e.user, username: e.useralias}})
+          .reduce(function(pvalue, e) {if(!pvalue.find(function(pe) {return pe._id == e._id})) pvalue.push(e); return pvalue;}, []);
       console.log('getRecentUsersForCircle', circleId, 'returning:', users);
       return users;
 //      return Meteor.call('getRecentUsersForCircle', thisCircle._id);
@@ -149,21 +179,44 @@ if(Meteor.isClient) {
 
 if (Meteor.isServer) {
   SearchSource.defineSource('topics', function(searchText, options) {
-    var options = {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']], limit: 20};
+    var options = {sort: [['closed', 'desc'], ['latestPostAt', 'desc'], ['createdAt', 'desc']], limit: 20};
 
     if(searchText) {
       console.log('About to search circles for', searchText, '...');
       var regExp = buildRegExp(searchText);
-      var selector = {$and: [{closed: {$ne: true}}, {archived: {$ne: true}}, {$or: [
-        {title: regExp},
-        {description: regExp}
-      ]}]};
+      // archived != true AND ((closed != true AND (title matches OR description matches)) OR (closed = true AND you are member))
+      var selector = {$and: [{archived: {$ne: true}},
+        {$or: [
+          {$and: [{closed: {$ne: true}}, {$or: [
+            {title: regExp},
+            {description: regExp}
+          ]}]},
+          {$and: [{closed: true}, {members: {$elemMatch: {userId: Meteor.userId()}}}, {$or: [
+            {title: regExp},
+            {description: regExp}
+          ]}]}
+        ]}]};
 
-      return Circles.find(selector, options).fetch();
+      var ret = Circles.find(selector, options).fetch();
     } else {
       console.log('About to call Circles.find for all...');
-      return Circles.find({closed: {$ne: true}, archived: {$ne: true}}, options).fetch();
+      var selector = {$and: [{archived: {$ne: true}},
+        {$or: [
+          {closed: {$ne: true}},
+          {$and: [{closed: true}, {members: {$elemMatch: {userId: Meteor.userId()}}}]}
+        ]}]}
+      var ret = Circles.find(selector, options).fetch();
     }
+
+    var userId = Meteor.userId();
+    return ret.map(function(e) {
+      if(e.closed && e.owner == userId) {
+        e.title = '* ' + e.title;
+      } else if(e.closed) {
+        e.title = '* ' + e.title;
+      }
+      return e;
+    });
   });
 
 
@@ -173,9 +226,9 @@ if (Meteor.isServer) {
     return new RegExp("(" + parts.join('|') + ")", "ig");
   }
 
-  Meteor.publish("topics", function() {
-    return Circles.find({$and: [{closed: {$ne: true}}, {archived: {$ne: true}}]}, {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']]});
-  });
+//  Meteor.publish("topics", function() {
+//    return Circles.find({$and: [{closed: {$ne: true}}, {archived: {$ne: true}}]}, {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']]});
+//  });
   Meteor.publish('usertopics', function() {
     return Circles.find({archived: {$ne: true}}, {sort: [['latestPostAt', 'desc'], ['createdAt', 'desc']]});
   });
@@ -199,7 +252,7 @@ function userMustBeLoggedIn()
 function userMustBeMemberOfCircle(circle)
 {
   var userId = Meteor.userId();
-  if(circle.closed && (circle.creator == userId || circle.owner == userId || !circle.members || !circle.members.find(function(e) {e.userId == userId}))) {
+  if(circle.closed && (!circle.members || !circle.members.find(function(e) {e.userId == userId}))) {
     throw new Meteor.Error('You are not a member of this closed circle. not-authorized.');
   }
 }
@@ -226,7 +279,9 @@ Meteor.methods({
 
     console.log("I'm in addCircle", options);
 
-    return Circles.insert({
+    var circleId = new Meteor.Collection.ObjectID().valueOf();
+    Circles.insert({
+      _id: circleId,
       title: options.title,
       description: options.description,
       closed: options.closed,
@@ -236,7 +291,21 @@ Meteor.methods({
       creatorUsername: Meteor.user().username,
       owner: Meteor.userId(),
       ownerUsername: Meteor.user().username,
+      members: [{
+        userId: Meteor.userId(),
+        username: Meteor.user().username,
+        alias: Meteor.user().username,
+        addedAt: new Date()
+      }]
     });
+
+    if(options.members && options.members.length) {
+      for(var i = 0;i < options.members.length;++i) {
+        Meteor.call('addMemberToCircle', {circleId: circleId, userId: options.members[i].userId, username: options.members[i].username, alias: options.members[i].alias});
+      }
+    }
+
+    return circleId;
   },
 
   archiveCircle: function(circleId) {
@@ -256,9 +325,9 @@ Meteor.methods({
 
     return Circles.update(options.circleId, {$addToSet: {
       members: {
-        userId: userId,
-        username: Meteor.user().username,
-        alias: Meteor.user().username,
+        userId: options.userId || userId,
+        username: options.username || Meteor.user().username,
+        alias: options.alias || Meteor.user().username,
         addedAt: new Date()
       }
     }});
@@ -283,8 +352,8 @@ Meteor.methods({
     });
   },
 
-  createCloseCircle: function(title, memberList, parentCircle /*?*/) {
-    if (!title || !memberList || !parentCircle) return; //?
+  createCloseCircle: function(options) {
+    if (!options.title || !options.memberList || !options.parentCircleId) return; //?
 
     /*TODO:
     if (circleAlreadyExists) {
@@ -293,11 +362,7 @@ Meteor.methods({
     }
     */
 
-    addCircle({title: title, closed: true /*parentCircle: parentCircle ?*/})  // needs to be private/hidden
-    for (var i = 0; i < memberList.count; ++i) {
-      addMemberToCircle({circleId: parentCircle._id});
-      //TODO: Add new Close Circle to User List.
-    }
+    Meteor.call('addCircle', {title: options.title, members: options.memberList, parentCircleId: options.parentCircleId, closed: true /*parentCircle: parentCircle ?*/});  // needs to be private/hidden
   },
 
   getRecentUsersForCircle: function(circleId) {

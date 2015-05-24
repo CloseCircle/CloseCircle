@@ -83,9 +83,9 @@
                 </div>
                 <div class="modal-body">
                     <form method="post">
-                        <select multiple name="members" style="width: 100%">
+                        <select multiple id="groupMembers" name="members" style="width: 100%">
                             {{#each getUserList}}
-                                <option value={{_id}}>{{username}}</option>
+                                {{> memberOption}}
                             {{/each}}
                         </select>
                     </form>
@@ -114,4 +114,8 @@
         <div class="message-heading">{{useralias}} <span class="message-subheading">{{createdAt}}</span></div>
         <div class="message-body">{{text}}</div>
     </div>
+</template>
+
+<template name="memberOption">
+    <option value="{{_id}}|{{username}}">{{username}}</option>
 </template>
