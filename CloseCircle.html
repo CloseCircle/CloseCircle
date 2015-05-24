@@ -40,8 +40,11 @@
 </template>
 
 <template name="TopicDiscussion">
-    <div class="container">
-        <header>
+    <div class="container discuss">
+        <header id="discussion">
+            <div>
+                <img src="/img/closecircle-logo.svg" alt="CloseCircle Logo">
+            </div>
             <h1>CloseCircle</h1>
             {{#with getTopic id}}
                 <h2>{{title}}</h2>
@@ -59,8 +62,8 @@
         </div>
 
         <form class="message-form">
-            <input type="text" name="text" id="text" class="message-input" placeholder="Type message here"/>
-            <button type="submit" class="btn btn-primary" id="addmessage">Add Message</button>
+            <input type="text" name="text" id="text" class="message-input-local" placeholder="Type message here"/>
+            <button type="submit" class="btn_main" id="addmessage">Add Message</button>
         </form>
     </div>
 </template>

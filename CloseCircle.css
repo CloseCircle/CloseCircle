@@ -29,7 +29,6 @@ html, body {
 
 .message-container {
     margin: 16px 0;
-    flex: 0 1 30px;
 }
 
 .message-body {
@@ -71,13 +70,29 @@ html, body {
     background-color: #fff;
 }
 
-#home h1 {
+#home h1,#discussion h1 {
     visibility: hidden;
     position: fixed;
 }
 
 #home img {
     width:100%;
+}
+
+#discussion img {
+    width: 200px;
+}
+
+.discuss {
+    background-color: #fff;
+    margin: 20px !important;
+    padding: 10px !important;
+}
+
+#discussion h2 {
+    border-top: 1px solid #dcdcdd;
+    border-bottom: 1px solid #dcdcdd;
+    padding: 5px 0;
 }
 
 #login-button-home {
@@ -134,6 +149,15 @@ button {
     box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset;
     transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
     margin-top: 20px;
+}
+
+.message-input-local {
+    border: 1px solid #dcdcdd;
+    border-radius: 5px;
+    transition: border-color 0.15s ease-in-out 0s, box-shadow 0.15s ease-in-out 0s;
+    padding: 5px;
+    display: block;
+    width: 100%;
 }
 
 .list-group-item-local {
