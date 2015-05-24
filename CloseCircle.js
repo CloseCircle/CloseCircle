@@ -75,6 +75,8 @@ if(Meteor.isClient) {
           if (err) console.error('Error while calling addMessage', err, err.stack);
           else {
             event.target.text.value = '';
+            var d = $("#messages").get(0);
+            d.scrollTop = d.scrollHeight;
           }
         });
         return false;
