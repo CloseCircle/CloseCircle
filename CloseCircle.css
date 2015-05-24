@@ -46,7 +46,8 @@ header {
     transform: translate(-50%, -50%);
     max-width: 500px;
     border: 1px solid #dfdfdf;
-    padding: 10px;
+    border-radius: 50%;
+    padding: 10% 10%;
 }
 
 header h1 {
