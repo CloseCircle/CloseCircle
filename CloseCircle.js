@@ -1,7 +1,6 @@
 // simple-todos.js
 Circles = new Mongo.Collection("circles");
 CircleMessages = new Mongo.Collection("circlemessages");
-Users = new Mongo.Collection('users');
 
 Router.route('/', function() {
   this.render('Home');
