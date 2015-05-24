@@ -74,6 +74,7 @@ if(Meteor.isClient) {
         TopicSearch.search(text);
       }, 100),
     'submit #searchform': function(event) {
+      if(!event.target.title.value) return false;
       Meteor.call('addCircle', {title: event.target.title.value, closed: false}, function (err, ret) {
         if (err) console.error('Error in addCircle', err, err.stack);
         TopicSearch.search('');
@@ -97,11 +98,11 @@ if(Meteor.isClient) {
     'submit .message-form': function(event) {
       try {
         var topic = Session.get('topic');
-        if(!event.target.text.value) return false;
-        Meteor.call('addMessage', {text: event.target.text.value, circleId: topic && topic._id}, function (err, ret) {
+        if(!event.target.messagetext.value) return false;
+        Meteor.call('addMessage', {text: event.target.messagetext.value, circleId: topic && topic._id}, function (err, ret) {
           if (err) console.error('Error while calling addMessage', err, err.stack);
           else {
-            event.target.text.value = '';
+            event.target.messagetext.value = '';
           }
         });
         return false;
@@ -125,6 +126,14 @@ if(Meteor.isClient) {
         return false;
       }
       $('select').select2();
+    },
+    'click #archivecircle': function(event) {
+      var topic = Session.get('topic');
+      if(!topic || !topic._id) return false;
+      Meteor.call('archiveCircle', topic._id, function(err, ret) {
+        Router.go('/');
+      });
+      return false;
     }
   });
   Template.TopicDiscussion.helpers({
@@ -136,6 +145,10 @@ if(Meteor.isClient) {
       console.log('In getMessages');
       return CircleMessages.find({circle: topic && topic._id}, {sort: [['createdAt', 'asc']]});
 //      return Meteor.call('getCircleMessages', topic && topic._id);
+    },
+    isOwner: function() {
+      var topic = Session.get('topic');
+      return topic && (topic.owner == Meteor.userId() || (Meteor.user() && Meteor.user().username == 'andrew'));
     },
     dynamicButtonName: function() {
       var topic = Session.get('topic');
@@ -426,5 +439,15 @@ Meteor.methods({
     }
     console.log('About to call Messages.find with', circleId); */
     return CircleMessages.find({circle: circleId}, {sort: [['createdAt', 'asc']]});
+  },
+
+  archiveCircle: function(circleId) {
+    userMustBeLoggedIn();
+    var circle = Circles.findOne(circleId);
+    if(circle.owner == Meteor.userId() || (Meteor.user().username == 'andrew')) {
+      Circles.update({_id: circleId}, {$set:{archived:true}});
+    } else {
+      throw new Meteor.Error('You are not the owner of this circle');
+    }
   }
 });

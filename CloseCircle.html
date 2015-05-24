@@ -12,11 +12,11 @@
 <template name="Home">
         <div class="container">
             <header id="home">
-                
-                <div>
-                    <img src="/img/closecircle-logo.svg" alt="CloseCircle Logo">
-                </div>
+
                 <h1>CloseCircle</h1>
+                <div>
+                    <img src="/img/closecircle-logo2.svg" alt="CloseCircle Logo">
+                </div>
 
                 <div id="login-button-home">
                     {{> loginButtons}}
@@ -43,7 +43,7 @@
     <div class="container discuss">
         <header id="discussion">
             <div>
-                <img src="/img/closecircle-logo.svg" alt="CloseCircle Logo">
+                <a href="/"><img src="/img/closecircle-logo.svg" alt="CloseCircle Logo"></a>
             </div>
             <h1>CloseCircle</h1>
             {{#with getTopic id}}
@@ -54,17 +54,16 @@
 
 
         <div class="col-sm-12" id="messages">
-            <!-- <div class="list-group"> -->
                 {{#each getMessages}}
                     {{> message}}
                 {{/each}}
-            <!-- </div> -->
         </div>
 
         <form class="message-form">
-            <input type="text" name="text" id="text" class="message-input-local" placeholder="Type message here"/>
+            <input type="text" name="text" id="messagetext" class="message-input-local" placeholder="Type message here" title="Post"/>
             <button type="submit" class="btn_main" id="addmessage">Add Message</button>
             <button type="button" class="btn" id="closecircle" data-toggle="modal" data-target="#groupselectModal">{{dynamicButtonName}}</button>
+            <button type="button" class="btn" id="archivecircle" style={{#if isOwner}}"display:block"{{else}}display:none{{/if}}>Archive Circle</button>
         </form>
 
 
