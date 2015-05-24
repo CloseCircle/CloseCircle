@@ -64,32 +64,35 @@
         <form class="message-form">
             <input type="text" name="text" id="text" class="message-input-local" placeholder="Type message here"/>
             <button type="submit" class="btn_main" id="addmessage">Add Message</button>
+            <button type="button" class="btn" id="closecircle" data-toggle="modal" data-target="#groupselectModal">Close Circle</button>
         </form>
+
+
+        {{> groupSelect}}
     </div>
 </template>
 
 
 <template name="groupSelect">
-    <div class="modal fade">
+    <div class="modal fade" id="groupselectModal" role="dialog" aria-labelledby="groupselectModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="groupsSelectClose"><span aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title">Invite to Close Circle</h4>
                 </div>
                 <div class="modal-body">
                     <form method="post">
-                        <select name="Icecream Flavours">
-                            <option value="double chocolate">Double Chocolate</option>
-                            <option value="vanilla">Vanilla</option>
-                            <option value="strawberry">Strawberry</option>
-                            <option value="caramel">Caramel</option>
+                        <select multiple name="members">
+                            {{#each getUserList}}
+                                <option value={{_id}}>{{username}}</option>
+                            {{/each}}
                         </select>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Invite</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="groupsSelectClose">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="inviteBtn">Invite</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
