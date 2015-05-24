@@ -4,10 +4,18 @@ CircleMessages = new Mongo.Collection("circlemessages");
 
 Router.route('/', function() {
   this.render('Home');
+  TopicSearch.search('');
 })
 
 Router.route('topic/:topicId', function() {
-  this.render('TopicDiscussion', {data: {id: this.params.topicId}});
+  Meteor.call('getCircle', this.params.topicId, function(err, ret) {
+    if(err) return console.error('Error from getCircle:', err, err.stack);
+    console.log('Setting topic for', this.params.topicId, 'to', ret);
+    Session.set('topic', ret);
+    this.render('TopicDiscussion', {data: {id: this.params.topicId}});
+  }.bind(this))
+//    Meteor.subscribe('topics');
+  Meteor.subscribe('topicmessages', this.params.topicId);
 })
 
 
@@ -39,7 +47,7 @@ if (!Array.prototype.find) {
 
 if(Meteor.isClient) {
   var options = {
-    keepHistory: 1000 * 60 * 5,
+    keepHistory: 1000,
     localSearch: true
   };
   var fields = ['title', 'description'];
@@ -81,17 +89,7 @@ if(Meteor.isClient) {
   Accounts.ui.config({
     passwordSignupFields: "USERNAME_ONLY"
   });
-  Template.Home.rendered = function() {
-    TopicSearch.search('');
-  };
   Template.TopicDiscussion.rendered = function() {
-    Meteor.call('getCircle', this.data.id, function(err, ret) {
-      if(err) return console.error('Error from getCircle:', err, err.stack);
-      console.log('Setting topic for', this.data.id, 'to', ret);
-      Session.set('topic', ret);
-    }.bind(this))
-//    Meteor.subscribe('topics');
-    Meteor.subscribe('topicmessages', this.data.id);
   };
   Template.TopicDiscussion.events({
     'submit .message-form': function(event) {
@@ -111,6 +109,17 @@ if(Meteor.isClient) {
       }
     },
     'click #closecircle': function(event) {
+      var topic = Session.get('topic');
+      if(!topic) return;
+      var existing = Circles.findOne({$and: [
+        {parentCircleId: topic._id},
+        {closed: true},
+        {members: {$elemMatch: {userId: Meteor.userId()}}},
+      ]});
+      if(existing) {
+        Router.go('/topic/' + existing._id);
+        return false;
+      }
       $('select').select2();
     }
   });
@@ -143,12 +152,13 @@ if(Meteor.isClient) {
         selectedChoices = selectedChoices.map(function(str) {var split = str.split('|'); return {userId: split[0], username: split[1], alias: split[1]}});
         var topic = Session.get('topic');
 
-        Meteor.call('createCloseCircle' /*?*/, {title: topic.title, parentCircleId: topic._id, memberList: selectedChoices}, function (err, ret) {
+        var newId = new Meteor.Collection.ObjectID().valueOf();
+        Meteor.call('createCloseCircle' /*?*/, {id: newId, title: topic.title, parentCircleId: topic._id, memberList: selectedChoices}, function (err, ret) {
           if (err) console.error('Error while calling createCloseCircle', err, err.stack);
           else {
-            selectedChoices.each(function() {
-              $(this).remove();
-            });
+            $('#groupMembers').val([]);
+            Router.go('/topic/' + newId);
+            $('#groupselectModal').modal('hide');
           }
         });
         return false;
@@ -213,7 +223,7 @@ if (Meteor.isServer) {
       var ret = Circles.find(selector, options).fetch();
     }
 
-    var userId = Meteor.userId();
+/*    var userId = Meteor.userId();
     return ret.map(function(e) {
       if(e.closed && e.owner == userId) {
         e.title = '* ' + e.title;
@@ -221,7 +231,8 @@ if (Meteor.isServer) {
         e.title = '* ' + e.title;
       }
       return e;
-    });
+    }); */
+    return ret;
   });
 
 
@@ -285,7 +296,7 @@ Meteor.methods({
 
     console.log("I'm in addCircle", options);
 
-    var circleId = new Meteor.Collection.ObjectID().valueOf();
+    var circleId = options.id || new Meteor.Collection.ObjectID().valueOf();
     Circles.insert({
       _id: circleId,
       title: options.title,
@@ -297,6 +308,7 @@ Meteor.methods({
       creatorUsername: Meteor.user().username,
       owner: Meteor.userId(),
       ownerUsername: Meteor.user().username,
+      parentCircleId: options.parentCircleId,
       members: [{
         userId: Meteor.userId(),
         username: Meteor.user().username,
@@ -367,8 +379,7 @@ Meteor.methods({
       return;
     }
     */
-
-    Meteor.call('addCircle', {title: options.title, members: options.memberList, parentCircleId: options.parentCircleId, closed: true /*parentCircle: parentCircle ?*/});  // needs to be private/hidden
+    return Meteor.call('addCircle', {id: options.id, title: options.title, members: options.memberList, parentCircleId: options.parentCircleId, closed: true /*parentCircle: parentCircle ?*/});  // needs to be private/hidden
   },
 
   getRecentUsersForCircle: function(circleId) {

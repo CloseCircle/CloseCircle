@@ -238,4 +238,8 @@ a.list-group-item-local {
     }
 }
 
+.topic-closed::before {
+    content: '\25C9\ ';
+    color: rgb(25, 133, 161);
+    background-color: #fff;
 }

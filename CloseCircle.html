@@ -47,7 +47,7 @@
             </div>
             <h1>CloseCircle</h1>
             {{#with getTopic id}}
-                <h2>{{title}}</h2>
+                <h2 class={{#if closed}}topic-closed{{/if}}>{{title}}</h2>
                 <h3>{{description}}</h3>
             {{/with}}
         </header>
@@ -102,7 +102,7 @@
 <template name="topic">
     <div id="topic">
     <a class="list-group-item-local" href="/topic/{{_id}}">
-        <h4 class="list-group-item-heading">{{{title}}}</h4>
+        <h4 class="list-group-item-heading{{#if closed}} topic-closed{{/if}}">{{{title}}}</h4>
         <p class="list-group-item-text">{{{description}}}</p>
     </a>
     </div>
